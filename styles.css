@@ -1,0 +1,132 @@
+:root {
+  color-scheme: dark;
+  --screen: #000;
+  --digit: #333;
+  --utility: #a5a5a5;
+  --operator: #ff9f0a;
+  --text: #fff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+  background: var(--screen);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+}
+
+.calculator {
+  width: min(100%, 430px);
+  min-height: min(100vh, 900px);
+  min-height: min(100dvh, 900px);
+  display: flex;
+  flex-direction: column;
+  padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+  background: var(--screen);
+}
+
+.display {
+  flex: 1;
+  min-height: 180px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 0 4px 20px;
+  color: var(--text);
+  font-size: clamp(4rem, 18vw, 5.5rem);
+  font-weight: 300;
+  letter-spacing: -0.055em;
+  line-height: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(10px, 3vw, 14px);
+}
+
+.button {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  background: var(--digit);
+  color: var(--text);
+  font: inherit;
+  font-size: clamp(1.7rem, 8vw, 2.25rem);
+  font-weight: 400;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: filter 120ms ease, transform 100ms ease;
+}
+
+.button:hover {
+  filter: brightness(1.2);
+}
+
+.button:active {
+  transform: scale(0.94);
+}
+
+.button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.utility {
+  background: var(--utility);
+  color: #000;
+  font-size: clamp(1.25rem, 6vw, 1.65rem);
+}
+
+.operator,
+.equal {
+  background: var(--operator);
+  color: var(--text);
+}
+
+.operator.is-selected {
+  background: var(--text);
+  color: var(--operator);
+}
+
+.zero {
+  grid-column: span 2;
+  aspect-ratio: auto;
+  border-radius: 999px;
+  padding-left: 28px;
+  text-align: left;
+}
+
+@media (max-height: 650px) {
+  .calculator {
+    min-height: 100dvh;
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  .display {
+    min-height: 100px;
+    padding-bottom: 12px;
+  }
+
+  .buttons {
+    gap: 8px;
+  }
+}
