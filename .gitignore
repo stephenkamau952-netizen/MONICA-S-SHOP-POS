@@ -1,3 +1,10 @@
+# Cloudflare / Supabase local state and secrets
+.wrangler/
+.dev.vars
+.dev.vars.*
+supabase/.temp/
+supabase/.branches/
+
 # Logs
 logs
 *.log

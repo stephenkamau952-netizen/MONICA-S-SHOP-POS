@@ -1,0 +1,15 @@
+# Supabase CLI project config. Migrations live in supabase/migrations and are
+# applied to the linked project with:  npx supabase link --project-ref <ref>
+#                                       npx supabase db push
+project_id = "monica-shop-pos"
+
+[auth]
+# PRD §5.4: invite-only accounts.
+enable_signup = false
+
+[auth.email]
+enable_signup = false
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true

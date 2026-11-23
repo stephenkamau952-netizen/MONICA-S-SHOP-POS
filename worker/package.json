@@ -1,0 +1,11 @@
+{
+  "name": "@shop/worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@shop/shared": "1.0.0",
+    "hono": "4.13.19",
+    "jose": "6.2.18"
+  }
+}

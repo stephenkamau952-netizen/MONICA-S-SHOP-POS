@@ -1,0 +1,29 @@
+// One Worker serves the Vite-built POS + dashboard as static assets and runs
+// the Hono API under /api/* (PRD §8). Secrets are NOT stored here:
+//   npx wrangler secret put SUPABASE_SECRET_KEY
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "shop-pos",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-11-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "vars": {
+    // Replace both with your project's values (Supabase → Project Settings → API Keys).
+    "SUPABASE_URL": "https://YOUR-PROJECT-REF.supabase.co",
+    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_REPLACE_ME"
+  },
+  // Per-user limits inside the Worker; add WAF rate-limit rules in the
+  // Cloudflare dashboard for per-IP limits on /api/approvals* (PRD §8.1 step 7).
+  "ratelimits": [
+    { "name": "API_LIMITER", "namespace_id": "1001", "simple": { "limit": 120, "period": 60 } },
+    { "name": "PIN_LIMITER", "namespace_id": "1002", "simple": { "limit": 10, "period": 60 } }
+  ],
+  "triggers": { "crons": ["*/15 * * * *", "0 0 * * *"] },
+  "observability": { "enabled": true }
+}
