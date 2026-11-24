@@ -14,9 +14,9 @@
     "run_worker_first": ["/api/*"]
   },
   "vars": {
-    // Replace both with your project's values (Supabase → Project Settings → API Keys).
-    "SUPABASE_URL": "https://YOUR-PROJECT-REF.supabase.co",
-    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_REPLACE_ME"
+    // Public values (Supabase → Project Settings → API Keys). Safe to commit.
+    "SUPABASE_URL": "https://rjbgpwyikthelpmjuxnl.supabase.co",
+    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_9tdgMkysXzwFHIaHg4oMBw_QMwTBBvv"
   },
   // Per-user limits inside the Worker; add WAF rate-limit rules in the
   // Cloudflare dashboard for per-IP limits on /api/approvals* (PRD §8.1 step 7).

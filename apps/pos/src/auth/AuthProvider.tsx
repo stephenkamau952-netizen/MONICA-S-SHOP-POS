@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { initSupabase, sb } from '../lib/supabase.ts';
+import { initSupabase, passwordSetupNeeded, sb } from '../lib/supabase.ts';
 import { errorText, read } from '../lib/api.ts';
 
 export interface OpenShiftInfo {
@@ -33,6 +33,7 @@ export type AuthState =
   | { status: 'loading' }
   | { status: 'error'; message: string }
   | { status: 'signed-out' }
+  | { status: 'set-password'; email: string; kind: 'invite' | 'recovery' }
   | { status: 'no-profile'; email: string }
   | { status: 'inactive' }
   | { status: 'mfa'; ctx: MyContext }
@@ -57,6 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setState({ status: 'signed-out' });
         return;
       }
+      const setup = passwordSetupNeeded();
+      if (setup) {
+        setState({ status: 'set-password', email: session.user.email ?? '', kind: setup });
+        return;
+      }
       const ctx = await read<MyContext>('my_context');
       if (!ctx.hasProfile) setState({ status: 'no-profile', email: session.user.email ?? '' });
       else if (ctx.active === false) setState({ status: 'inactive' });
@@ -73,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((client) => {
         const { data } = client.auth.onAuthStateChange((event) => {
           // Token refreshes do not change who is signed in; avoid re-rendering the till.
-          if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'MFA_CHALLENGE_VERIFIED' || event === 'USER_UPDATED') {
+          if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'MFA_CHALLENGE_VERIFIED' || event === 'USER_UPDATED' || event === 'PASSWORD_RECOVERY') {
             void refresh();
           }
         });

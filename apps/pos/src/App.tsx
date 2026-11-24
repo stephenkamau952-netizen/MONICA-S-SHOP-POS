@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { AuthProvider, useAuth } from './auth/AuthProvider.tsx';
-import { Login, Message, MfaGate } from './auth/Login.tsx';
+import { Login, Message, MfaGate, SetPassword } from './auth/Login.tsx';
 import { navigate, usePath } from './lib/router.ts';
 import { Spinner } from './ui/ui.tsx';
 
@@ -41,6 +41,8 @@ function Root() {
       return <Message title="Cannot start" retry>{state.message}</Message>;
     case 'signed-out':
       return <Login />;
+    case 'set-password':
+      return <SetPassword email={state.email} kind={state.kind} />;
     case 'no-profile':
       return (
         <Message title="Account not set up">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { sb } from '../lib/supabase.ts';
+import { passwordSetupDone, sb } from '../lib/supabase.ts';
 import { errorText } from '../lib/api.ts';
 import { Banner, Button, Field, Input } from '../ui/ui.tsx';
 import { useAuth } from './AuthProvider.tsx';
@@ -19,6 +19,7 @@ export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   return (
@@ -42,7 +43,61 @@ export function Login() {
           <Input type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
         </Field>
         {error && <Banner tone="error">{error}</Banner>}
+        {info && <Banner tone="info">{info}</Banner>}
         <Button variant="primary" type="submit" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</Button>
+        <Button
+          variant="ghost"
+          disabled={busy}
+          onClick={async () => {
+            setError(null);
+            if (!email.trim()) return setError('Type your email first, then press "Forgot password".');
+            const { error } = await sb().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/` });
+            if (error) setError(error.message);
+            else setInfo('If that email has an account, a reset link is on its way. Open it on this device.');
+          }}
+        >
+          Forgot password?
+        </Button>
+      </form>
+    </Shell>
+  );
+}
+
+/** After an invite or reset link: the user chooses their password. */
+export function SetPassword({ email, kind }: { email: string; kind: 'invite' | 'recovery' }) {
+  const { refresh, signOut } = useAuth();
+  const [pw, setPw] = useState('');
+  const [pw2, setPw2] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  return (
+    <Shell title={kind === 'invite' ? 'Welcome — choose your password' : 'Choose a new password'}>
+      <p className="mb-4 text-sm text-ink-2">Account: <strong>{email}</strong>. Use at least 10 characters and do not share it.</p>
+      <form
+        className="flex flex-col gap-3"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (pw.length < 10) return setError('Use at least 10 characters.');
+          if (pw !== pw2) return setError('The two passwords do not match.');
+          setBusy(true);
+          setError(null);
+          const { error } = await sb().auth.updateUser({ password: pw });
+          setBusy(false);
+          if (error) return setError(error.message);
+          passwordSetupDone();
+          window.history.replaceState(null, '', '/');
+          await refresh();
+        }}
+      >
+        <Field label="New password">
+          <Input type="password" autoComplete="new-password" required value={pw} onChange={(e) => setPw(e.target.value)} autoFocus />
+        </Field>
+        <Field label="Repeat password">
+          <Input type="password" autoComplete="new-password" required value={pw2} onChange={(e) => setPw2(e.target.value)} />
+        </Field>
+        {error && <Banner tone="error">{error}</Banner>}
+        <Button variant="primary" type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save password'}</Button>
+        <Button variant="ghost" onClick={() => { passwordSetupDone(); void signOut(); }}>Cancel</Button>
       </form>
     </Shell>
   );

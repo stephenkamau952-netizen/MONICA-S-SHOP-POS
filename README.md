@@ -11,6 +11,19 @@ person, an open shift and a reason. Built from the PRD "Anti-Theft Retail POS & 
 | Shared contract | `packages/shared/` | Zod schemas, route table, error codes, reason codes, money helpers |
 | Till and dashboard | `apps/pos/` | React + Vite + Tailwind. `/till` for cashiers, `/admin` for the owner |
 
+## Live deployment
+
+| | |
+|---|---|
+| App (till: `/till`, owner: `/admin`) | https://shop-pos.monicashop.workers.dev |
+| Supabase project | `rjbgpwyikthelpmjuxnl` (eu-west-1), migrations 0100–0600 applied |
+| Cloudflare Worker | `shop-pos` on account `Dukayamonica20@gmail.com's Account`, crons every 15 min and 00:00 UTC |
+| Owner | dukayamonica20@gmail.com (invited; sets password, MFA and PIN on first sign-in) |
+
+First sign-in for the owner: open the invite email → choose a password → scan the authenticator QR code → in the
+dashboard go to **Staff → Set PIN** on your own name → **Settings → Tills** to set T1's opening float → **Products &
+stock** to add products and receive opening stock.
+
 ## Run the checks locally
 
 Needs Node 20.19 or newer.
@@ -43,14 +56,13 @@ npm run check:deploy  # build + wrangler dry-run (validates wrangler.jsonc and t
    npx supabase link --project-ref <your-project-ref>
    npx supabase db push
    ```
-4. **Owner account.** Authentication → Users → Invite user → the owner's email. After they set a password, open the
-   SQL editor and run (choose a 6-digit PIN that is not obvious):
+4. **Owner account.** Authentication → Users → Invite user → the owner's email. Then open the SQL editor and run:
    ```sql
    select public.bootstrap_store('{"storeName":"Monica''s Shop","ownerEmail":"OWNER@EMAIL",
-     "ownerName":"Monica","ownerPin":"<6 digits>","registerCode":"T1","registerName":"Till 1",
-     "floatCents":500000}'::jsonb);
+     "ownerName":"Monica","registerCode":"T1","registerName":"Till 1","floatCents":500000}'::jsonb);
    ```
-   `floatCents` is the opening float in cents (500000 = KES 5,000).
+   `floatCents` is the opening float in cents (500000 = KES 5,000). The owner sets their own PIN in the app
+   (Staff → Set PIN), so it is never typed into SQL.
 5. **Worker config.** In `wrangler.jsonc` set `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. Then:
    ```powershell
    npx wrangler login

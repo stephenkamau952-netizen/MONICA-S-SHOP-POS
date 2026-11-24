@@ -1549,8 +1549,8 @@ $$;
 -- ---------------------------------------------------------------------------
 -- One-time bootstrap, run from the SQL editor only (no API role can call it).
 --   select public.bootstrap_store('{"storeName":"Monica''s Shop","ownerEmail":"owner@example.com",
---     "ownerName":"Monica","ownerPin":"<6 digits>","registerCode":"T1","registerName":"Till 1",
---     "floatCents":500000}'::jsonb);
+--     "ownerName":"Monica","registerCode":"T1","registerName":"Till 1","floatCents":500000}'::jsonb);
+-- ("ownerPin" is optional; the owner can set it in the app under Staff.)
 -- ---------------------------------------------------------------------------
 create or replace function public.bootstrap_store(p jsonb)
 returns jsonb
@@ -1572,15 +1572,16 @@ begin
   if exists (select 1 from public.profiles where id = v_uid) then
     perform public._err('INVALID_INPUT', 'that account already has a staff profile');
   end if;
-  if v_pin is null or v_pin !~ '^[0-9]{6}$' or v_pin ~ '^(.)\1{5}$'
-     or v_pin in ('123456', '654321', '012345', '543210', '123123', '121212') then
+  -- ownerPin is optional: the owner can set it privately later (Staff -> Set PIN).
+  if v_pin is not null and (v_pin !~ '^[0-9]{6}$' or v_pin ~ '^(.)\1{5}$'
+     or v_pin in ('123456', '654321', '012345', '543210', '123123', '121212')) then
     perform public._err('WEAK_PIN', 'ownerPin must be 6 digits and not trivial');
   end if;
   insert into public.stores (id, name) values (v_store, public._j_text(p, 'storeName', true, 120));
   insert into public.store_settings (store_id) values (v_store);
   insert into public.profiles (id, store_id, role, display_name, pin_hash)
   values (v_uid, v_store, 'OWNER', public._j_text(p, 'ownerName', true, 60),
-          extensions.crypt(v_pin, extensions.gen_salt('bf', 10)));
+          case when v_pin is null then null else extensions.crypt(v_pin, extensions.gen_salt('bf', 10)) end);
   insert into public.registers (id, store_id, code, name, float_cents)
   values (v_reg, v_store, upper(coalesce(public._j_text(p, 'registerCode', false, 6), 'T1')),
           coalesce(public._j_text(p, 'registerName', false, 60), 'Till 1'),

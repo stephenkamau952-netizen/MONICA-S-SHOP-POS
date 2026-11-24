@@ -90,6 +90,12 @@ export function Dashboard() {
         </div>
       </div>
       {error && <Banner tone="error">{error}</Banner>}
+      {!ctx.hasPin && (
+        <Banner tone="warn">
+          You have no owner PIN yet, so nobody can approve voids, refunds or price overrides at the till.
+          Go to <button type="button" className="underline" onClick={() => navigate('/admin/staff')}>Staff</button> → Set PIN on your own name.
+        </Banner>
+      )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Gross sales" value={formatKes(data.grossSalesCents)} sub={`${data.salesCount} sale${data.salesCount === 1 ? '' : 's'}`} />
